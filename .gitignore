@@ -1,0 +1,20 @@
+# System
+.DS_Store
+**/.DS_Store
+
+# Grosse / ungenutzte Videos (V1 ueberschreitet GitHubs 100-MB-Limit)
+assets/video/Bewerbungsvideo_V1.mp4
+assets/video/Bewerbungsvideo_V2.mp4
+
+# Original-Bilder (nicht verwendet, es zaehlen nur die Web-Versionen)
+assets/img/editorial-full.jpg
+assets/img/portrait-frontal.jpg
+assets/img/silhouette-hand.jpg
+assets/img/silhouette-sitzend.jpg
+assets/img/BW_Project_Jan/*.jpg
+assets/img/Paris/*Kopie*
+assets/img/Neo- Redesign Swisscom/
+
+# Platzhalter-Hinweise
+assets/img/HIER_BILDER_ABLEGEN.txt
+assets/video/HIER_VIDEO_ABLEGEN.txt
