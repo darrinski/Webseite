@@ -130,6 +130,20 @@ body.page-work  { --nav-ink: #0a0a0a; --hover: var(--purple); } /* Violett */
   color: var(--ink);
   letter-spacing: .01em;
 }
+/* klickbarer Untertitel mit Unterstreich-Animation */
+.hero-sub--link {
+  display: inline-block; width: fit-content;
+  position: relative; text-decoration: none;
+  transform-origin: left center;
+  transition: transform .3s ease;
+}
+.hero-sub--link::after {
+  content: ""; position: absolute; left: 0; bottom: -8px;
+  width: 0; height: 2px; background: var(--hover);
+  transition: width .4s ease;
+}
+.hero-sub--link:hover { transform: scale(1.06); }
+.hero-sub--link:hover::after { width: 100%; }
 
 /* --- Bild-Seite --- */
 .hero-figure {
@@ -225,6 +239,32 @@ body.page-work  { --nav-ink: #0a0a0a; --hover: var(--purple); } /* Violett */
   font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
   color: var(--hover);
 }
+/* Cover, das immer schwarzweiss bleibt (z.B. YouTube-Thumbnail) */
+.work-tile--bw img { filter: brightness(.42) grayscale(1); }
+.work-tile--bw:hover img { filter: brightness(1) grayscale(1); }
+
+/* Video-Embed (YouTube), responsiv 16:9 */
+.video-embed { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #0d0d0d; }
+.video-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+/* Zwei Videos nebeneinander, gleiche Höhe (Quer- + Hochformat) */
+.dual-video {
+  display: flex;
+  gap: clamp(12px, 1.5vw, 18px);
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  aspect-ratio: 2.4 / 1;       /* Quer (16:9) + Hoch (9:16) passen nebeneinander */
+}
+.dual-video > div { position: relative; height: 100%; background: #0d0d0d; }
+.dual-video .v-land { aspect-ratio: 16 / 9; }
+.dual-video .v-port { aspect-ratio: 9 / 16; }
+.dual-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+@media (max-width: 700px) {
+  .dual-video { aspect-ratio: auto; flex-direction: column; }
+  .dual-video > div { height: auto; width: 100%; }
+  .dual-video .v-port { max-width: 320px; }
+}
 .mail {
   font-family: var(--font-display);
   font-size: clamp(30px, 7vw, 96px);
@@ -292,6 +332,60 @@ body.page-work  { --nav-ink: #0a0a0a; --hover: var(--purple); } /* Violett */
   font-family: var(--font-display); font-weight: 400;
   font-size: clamp(22px, 2.6vw, 34px); text-transform: uppercase;
   line-height: 1; margin-bottom: clamp(14px, 1.6vw, 22px);
+}
+
+/* Werdegang mit kreativem, geschnittenem Bild daneben */
+.werdegang {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: clamp(30px, 5vw, 72px);
+  align-items: start;
+}
+.werdegang .about-intro { max-width: none; }
+/* Werdegang-Fliesstext: kleiner, aber normal und luftig (nicht gedrängt) */
+.werdegang .lead { font-size: clamp(15px, 1.25vw, 17px); line-height: 1.7; }
+.werdegang .about-intro .lead + .lead { margin-top: 1.4em; }
+
+/* Prequel-Look: unscharfer Hintergrund + scharfer, deckungsgleicher Ausschnitt */
+.frame-figure {
+  position: relative;
+  overflow: hidden;
+  margin: 0;
+  aspect-ratio: 3 / 4;
+  background: #8d8d8d;          /* passt zum Studio-Grau, kaschiert weiche Ränder */
+}
+/* unter .frame-figure gescoped, damit der Blur nicht überschrieben wird */
+.frame-figure .ff-blur,
+.frame-figure .ff-sharp {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center 24%;
+}
+.frame-figure .ff-blur { filter: grayscale(1) blur(8px) brightness(.97); }
+.frame-figure .ff-sharp { filter: grayscale(1); clip-path: inset(12% 28% 32% 48%); }
+/* feines Korn nur über dem unscharfen Bereich (vom scharfen Ausschnitt überdeckt) */
+.ff-grain {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  opacity: 0.18;
+  filter: grayscale(1) contrast(1.05);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.ff-frame {
+  position: absolute; left: 48%; top: 12%; width: 24%; height: 56%;
+  border: 1px solid rgba(255, 255, 255, .9);
+  pointer-events: none;
+}
+.ff-cap {
+  position: absolute; left: 16px; bottom: 14px;
+  display: flex; flex-direction: column; gap: 2px;
+  font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+  color: rgba(255, 255, 255, .92);
+}
+@media (max-width: 760px) {
+  .werdegang { grid-template-columns: 1fr; }
+  .frame-figure { aspect-ratio: 3 / 4; min-height: 0; height: auto; }
 }
 
 /* Video-Steuerung (Play/Pause + Timeline) */
@@ -438,6 +532,94 @@ body.page-work  { --nav-ink: #0a0a0a; --hover: var(--purple); } /* Violett */
   flex: 0 0 auto;       /* Breite/Höhe setzt das Script */
 }
 .gallery img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* =====================================================
+   LIGHTBOX
+   ===================================================== */
+.lightbox {
+  position: fixed; inset: 0; z-index: 1000;
+  display: none; align-items: center; justify-content: center;
+  background: rgba(12, 12, 12, .95);
+}
+.lightbox.open { display: flex; }
+.lightbox img {
+  max-width: 90vw; max-height: 88vh;
+  object-fit: contain; display: block;
+}
+.lightbox button {
+  position: absolute; background: none; border: none;
+  color: #fff; cursor: pointer; line-height: 1;
+  font-family: var(--font-sans); transition: color .2s, opacity .2s;
+}
+.lb-close { top: 20px; right: 28px; font-size: 34px; }
+.lb-prev, .lb-next {
+  top: 50%; transform: translateY(-50%);
+  font-size: 56px; padding: 8px 18px; opacity: .8;
+}
+.lb-prev { left: 10px; }
+.lb-next { right: 10px; }
+.lb-close:hover, .lb-prev:hover, .lb-next:hover { color: var(--hover); opacity: 1; }
+
+/* =====================================================
+   BURGER + MOBILE-MENÜ
+   ===================================================== */
+.burger { display: none; }
+
+.mobile-menu {
+  position: fixed; inset: 0; z-index: 1050;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity .35s ease;
+}
+.mobile-menu.open { opacity: 1; pointer-events: auto; }
+.mobile-nav { display: flex; flex-direction: column; gap: clamp(16px, 4vh, 34px); text-align: center; }
+.mobile-nav a {
+  font-family: var(--font-display); text-transform: uppercase;
+  font-size: clamp(40px, 12vw, 76px); line-height: 1.05; color: var(--nav-ink);
+  opacity: 0; transform: translateY(16px);
+  transition: opacity .4s ease, transform .4s ease, color .2s ease;
+}
+.mobile-menu.open .mobile-nav a { opacity: 1; transform: none; }
+.mobile-menu.open .mobile-nav a:nth-child(1) { transition-delay: .10s; }
+.mobile-menu.open .mobile-nav a:nth-child(2) { transition-delay: .18s; }
+.mobile-menu.open .mobile-nav a:nth-child(3) { transition-delay: .26s; }
+.mobile-nav a:hover { color: var(--hover); transition-delay: 0s; }
+
+@media (max-width: 860px) {
+  .burger {
+    display: flex; flex-direction: column; justify-content: center; gap: 5px;
+    width: 36px; height: 36px; padding: 7px; background: none; border: none;
+    cursor: pointer; z-index: 1100; position: relative;
+  }
+  .burger span {
+    display: block; height: 2px; width: 100%; background: var(--nav-ink);
+    transition: transform .35s ease, opacity .2s ease; transform-origin: center;
+  }
+  .burger.is-open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .burger.is-open span:nth-child(2) { opacity: 0; }
+  .burger.is-open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+}
+
+/* Video-Standbild (lädt YouTube erst bei Klick) */
+.video-facade {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  border: 0; padding: 0; cursor: pointer;
+  background-color: #0d0d0d; background-size: cover; background-position: center;
+  display: flex; align-items: center; justify-content: center;
+  filter: grayscale(1); transition: filter .3s ease;
+}
+.video-facade:hover { filter: grayscale(0); }
+.vf-play {
+  position: relative; width: 64px; height: 64px; border-radius: 50%;
+  background: rgba(0, 0, 0, .5); backdrop-filter: blur(2px); transition: background .25s ease;
+}
+.video-facade:hover .vf-play { background: var(--hover); }
+.vf-play::before {
+  content: ""; position: absolute; top: 50%; left: 54%; transform: translate(-50%, -50%);
+  border-style: solid; border-width: 11px 0 11px 19px;
+  border-color: transparent transparent transparent #fff;
+}
 
 /* =====================================================
    RESPONSIVE

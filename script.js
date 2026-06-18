@@ -64,7 +64,8 @@ function layoutGalleries() {
     const cw = g.clientWidth;
     if (!cw) return;
     const vw = window.innerWidth;
-    const target = vw < 700 ? 300 : vw < 1100 ? 400 : 480;
+    let target = vw < 700 ? 300 : vw < 1100 ? 400 : 480;
+    if (g.dataset.target && vw >= 1100) target = +g.dataset.target;
     figs.forEach((f) => (f._ar = arOf(f)));
     const rows = [];
     let row = [], sum = 0;
@@ -118,3 +119,111 @@ window.addEventListener("resize", () => {
   clearTimeout(_galleryRT);
   _galleryRT = setTimeout(layoutGalleries, 150);
 });
+
+// ---- Lightbox: Galeriebilder anklicken, mit Pfeiltasten blättern ----
+(function () {
+  const imgs = Array.from(document.querySelectorAll(".gallery img"));
+  if (!imgs.length) return;
+
+  const lb = document.createElement("div");
+  lb.className = "lightbox";
+  lb.innerHTML =
+    '<button class="lb-close" type="button" aria-label="Schliessen">×</button>' +
+    '<button class="lb-prev" type="button" aria-label="Zurück">‹</button>' +
+    '<img alt="" />' +
+    '<button class="lb-next" type="button" aria-label="Weiter">›</button>';
+  document.body.appendChild(lb);
+  const lbImg = lb.querySelector("img");
+  let idx = 0;
+
+  const show = (i) => { idx = (i + imgs.length) % imgs.length; lbImg.src = imgs[idx].src; };
+  const open = (i) => {
+    show(i);
+    lb.classList.add("open");
+    document.documentElement.style.overflow = "hidden";
+    if (typeof lenis !== "undefined" && lenis) lenis.stop();
+  };
+  const close = () => {
+    lb.classList.remove("open");
+    document.documentElement.style.overflow = "";
+    if (typeof lenis !== "undefined" && lenis) lenis.start();
+  };
+
+  imgs.forEach((im, i) => {
+    im.style.cursor = "zoom-in";
+    im.addEventListener("click", () => open(i));
+  });
+  lb.querySelector(".lb-close").addEventListener("click", close);
+  lb.querySelector(".lb-prev").addEventListener("click", (e) => { e.stopPropagation(); show(idx - 1); });
+  lb.querySelector(".lb-next").addEventListener("click", (e) => { e.stopPropagation(); show(idx + 1); });
+  lb.addEventListener("click", (e) => { if (e.target === lb) close(); });
+  document.addEventListener("keydown", (e) => {
+    if (!lb.classList.contains("open")) return;
+    if (e.key === "Escape") close();
+    else if (e.key === "ArrowLeft") show(idx - 1);
+    else if (e.key === "ArrowRight") show(idx + 1);
+  });
+})();
+
+// ---- Mobile Burger-Menü ----
+(function () {
+  const header = document.querySelector(".site-header");
+  const nav = header && header.querySelector(".nav");
+  if (!header || !nav) return;
+
+  const burger = document.createElement("button");
+  burger.className = "burger";
+  burger.type = "button";
+  burger.setAttribute("aria-label", "Menü");
+  burger.innerHTML = "<span></span><span></span><span></span>";
+  header.appendChild(burger);
+
+  const menu = document.createElement("div");
+  menu.className = "mobile-menu";
+  const inner = document.createElement("nav");
+  inner.className = "mobile-nav";
+  nav.querySelectorAll("a").forEach((a) => {
+    const link = document.createElement("a");
+    link.href = a.getAttribute("href");
+    link.textContent = a.textContent;
+    inner.appendChild(link);
+  });
+  menu.appendChild(inner);
+  document.body.appendChild(menu);
+
+  const setOpen = (open) => {
+    burger.classList.toggle("is-open", open);
+    menu.classList.toggle("open", open);
+    document.documentElement.style.overflow = open ? "hidden" : "";
+    if (typeof lenis !== "undefined" && lenis) (open ? lenis.stop() : lenis.start());
+  };
+  burger.addEventListener("click", () => setOpen(!menu.classList.contains("open")));
+  inner.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => setOpen(false)));
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") setOpen(false); });
+})();
+
+// ---- YouTube erst bei Klick laden (Performance) ----
+(function () {
+  document.querySelectorAll(".video-embed iframe, .dual-video iframe").forEach((frame) => {
+    const src = frame.getAttribute("src");
+    const m = src && src.match(/embed\/([\w-]+)/);
+    if (!m) return;
+    const id = m[1];
+    const wrap = frame.parentElement;
+    const facade = document.createElement("button");
+    facade.type = "button";
+    facade.className = "video-facade";
+    facade.setAttribute("aria-label", "Video abspielen");
+    facade.style.backgroundImage = "url(https://img.youtube.com/vi/" + id + "/maxresdefault.jpg)";
+    facade.innerHTML = '<span class="vf-play" aria-hidden="true"></span>';
+    facade.addEventListener("click", () => {
+      const ifr = document.createElement("iframe");
+      ifr.src = src + (src.includes("?") ? "&" : "?") + "autoplay=1";
+      ifr.title = frame.title || "Video";
+      if (frame.allow) ifr.allow = frame.allow;
+      ifr.allowFullscreen = true;
+      wrap.replaceChild(ifr, facade);
+    });
+    wrap.replaceChild(facade, frame);
+  });
+})();
