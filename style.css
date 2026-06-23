@@ -398,9 +398,8 @@ body.page-work  { --nav-ink: #0a0a0a; --hover: var(--purple); } /* Violett */
 .vid-btn {
   flex: none; width: 36px; height: 36px;
   display: flex; align-items: center; justify-content: center;
-  background: rgba(0, 0, 0, .4); color: #fff;
+  background: rgba(0, 0, 0, .55); color: #fff;
   border: none; border-radius: 50%; cursor: pointer;
-  backdrop-filter: blur(4px);
   transition: background .25s;
 }
 .vid-btn:hover { background: var(--hover); }
@@ -612,7 +611,7 @@ body.page-work  { --nav-ink: #0a0a0a; --hover: var(--purple); } /* Violett */
 .video-facade:hover { filter: grayscale(0); }
 .vf-play {
   position: relative; width: 64px; height: 64px; border-radius: 50%;
-  background: rgba(0, 0, 0, .5); backdrop-filter: blur(2px); transition: background .25s ease;
+  background: rgba(0, 0, 0, .55); transition: background .25s ease;
 }
 .video-facade:hover .vf-play { background: var(--hover); }
 .vf-play::before {

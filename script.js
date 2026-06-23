@@ -2,6 +2,17 @@
    DARREN SUTTER — Portfolio  ·  script.js
    ===================================================== */
 
+// ---- Favicon (DS-Logo) auf allen Seiten ----
+(function () {
+  if (!document.querySelector('link[rel="icon"]')) {
+    const l = document.createElement("link");
+    l.rel = "icon";
+    l.type = "image/svg+xml";
+    l.href = "favicon.svg";
+    document.head.appendChild(l);
+  }
+})();
+
 // ---- Smooth Scroll (Lenis) ----
 const lenis = new Lenis({
   lerp: 0.1,

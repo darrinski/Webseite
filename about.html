@@ -41,12 +41,13 @@
 
         <!-- VIDEO -->
         <figure class="hero-figure">
-          <video autoplay loop playsinline poster="assets/img/silhouette-hand-web.jpg" id="aboutVid">
+          <video autoplay muted loop playsinline poster="assets/img/silhouette-hand-web.jpg" id="aboutVid">
             <source src="assets/video/about-loop.mp4" type="video/mp4" />
           </video>
           <div class="vid-ctrl">
             <button class="vid-btn" id="playBtn" type="button" aria-label="Pause"></button>
             <div class="vid-timeline" id="vidTimeline"><span class="vid-progress" id="vidProgress"></span></div>
+            <button class="vid-btn" id="muteBtn" type="button" aria-label="Ton einschalten"></button>
           </div>
         </figure>
 
@@ -166,23 +167,48 @@
     // About-Video: Play/Pause + Timeline, direkt mit Ton (mit stummem Fallback)
     const vid = document.getElementById('aboutVid');
     const playBtn = document.getElementById('playBtn');
+    const muteBtn = document.getElementById('muteBtn');
     const timeline = document.getElementById('vidTimeline');
     const progress = document.getElementById('vidProgress');
     const ICON_PLAY = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
     const ICON_PAUSE = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="15" y="5" width="4" height="14"/></svg>';
+    const ICON_MUTED = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
+    const ICON_SOUND = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>';
 
     if (vid && playBtn) {
-      // direkt mit Ton starten; falls der Browser das blockt, stumm weiterlaufen
-      vid.muted = false;
-      vid.play().catch(() => { vid.muted = true; vid.play().catch(() => {}); });
+      // startet automatisch stumm (Browser erlauben Autoplay nur stumm)
+      vid.play().catch(() => {});
+      if (muteBtn) {
+        muteBtn.innerHTML = ICON_MUTED;
+        muteBtn.addEventListener('click', () => {
+          vid.muted = !vid.muted;
+          muteBtn.innerHTML = vid.muted ? ICON_MUTED : ICON_SOUND;
+          muteBtn.setAttribute('aria-label', vid.muted ? 'Ton einschalten' : 'Ton ausschalten');
+          if (!vid.muted) vid.play();
+        });
+      }
 
       const sync = () => {
         playBtn.innerHTML = vid.paused ? ICON_PLAY : ICON_PAUSE;
         playBtn.setAttribute('aria-label', vid.paused ? 'Abspielen' : 'Pause');
       };
-      playBtn.addEventListener('click', () => { vid.paused ? vid.play() : vid.pause(); });
+      let manualPause = false;
+      playBtn.addEventListener('click', () => {
+        if (vid.paused) { manualPause = false; vid.play(); }
+        else { manualPause = true; vid.pause(); }
+      });
       vid.addEventListener('play', sync);
       vid.addEventListener('pause', sync);
+
+      // Performance: Video pausieren, wenn es nicht im Sichtbereich ist
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver((entries) => {
+          entries.forEach((en) => {
+            if (en.isIntersecting) { if (!manualPause) vid.play().catch(() => {}); }
+            else { vid.pause(); }
+          });
+        }, { threshold: 0.15 }).observe(vid);
+      }
 
       const updateProgress = () => {
         if (progress && vid.duration) {
