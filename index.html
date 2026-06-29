@@ -22,6 +22,18 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body class="page-home">
+  <!-- ============ LOADINGSCREEN ============ -->
+  <div id="loader" aria-hidden="true">
+    <div class="ld-panel ld-top"></div>
+    <div class="ld-panel ld-bottom"></div>
+    <div class="ld-content">
+      <div class="ld-bar">
+        <span class="ld-fill"></span>
+        <span class="ld-pct">0%</span>
+      </div>
+    </div>
+  </div>
+
   <!-- ============ HEADER / NAV ============ -->
   <header class="site-header">
     <a href="index.html" class="logo">DS</a>
@@ -67,5 +79,55 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
   <script src="script.js"></script>
+  <script>
+    // Loadingscreen: Prozente langsam -> schnell -> gegen Ende langsam, dann Vorhang
+    (function () {
+      const loader = document.getElementById('loader');
+      if (!loader) return;
+      const fill = loader.querySelector('.ld-fill');
+      const pct = loader.querySelector('.ld-pct');
+
+      document.documentElement.style.overflow = 'hidden';
+      if (typeof lenis !== 'undefined' && lenis) lenis.stop();
+
+      const duration = 2700;
+      // easeInOutQuart: langsamer Start, schnelle Mitte, sanftes Auslaufen gegen Ende
+      const ease = (t) => (t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2);
+
+      function run() {
+        const start = performance.now();
+        function step(now) {
+          const t = Math.min(1, (now - start) / duration);
+          const p = ease(t) * 100;
+          fill.style.width = p + '%';
+          pct.style.left = p + '%';
+          pct.textContent = Math.round(p) + '%';
+          if (t < 1) requestAnimationFrame(step);
+          else finish();
+        }
+        requestAnimationFrame(step);
+      }
+
+      function finish() {
+        loader.classList.add('fade');           // Balken + Prozent ausblenden
+        setTimeout(() => {
+          loader.classList.add('done');         // Vorhang öffnet sich
+          document.documentElement.style.overflow = '';
+          if (typeof lenis !== 'undefined' && lenis) lenis.start();
+          setTimeout(() => loader.remove(), 950);
+        }, 450);
+      }
+
+      // Erst starten, wenn die Webseiten-Schrift (Anton) geladen ist
+      let started = false;
+      const begin = () => { if (!started) { started = true; run(); } };
+      if (document.fonts && document.fonts.load) {
+        document.fonts.load('1em "Anton"').then(begin).catch(begin);
+        setTimeout(begin, 700); // Fallback, falls die Schrift langsam lädt
+      } else {
+        begin();
+      }
+    })();
+  </script>
 </body>
 </html>

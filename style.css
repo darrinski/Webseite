@@ -621,6 +621,39 @@ body.page-work  { --nav-ink: #0a0a0a; --hover: var(--purple); } /* Violett */
 }
 
 /* =====================================================
+   LOADINGSCREEN (Startseite)
+   ===================================================== */
+#loader {
+  position: fixed; inset: 0; z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+}
+.ld-panel {
+  position: absolute; left: 0; right: 0; height: 50.5%;
+  background: #0a0a0a;
+  transition: transform .85s cubic-bezier(.76, 0, .24, 1);
+}
+.ld-top { top: 0; }
+.ld-bottom { bottom: 0; }
+#loader.done .ld-top { transform: translateY(-100%); }
+#loader.done .ld-bottom { transform: translateY(100%); }
+
+.ld-content {
+  position: relative; z-index: 1;
+  width: min(56vw, 620px);
+  transition: opacity .4s ease;
+}
+#loader.fade .ld-content { opacity: 0; }
+.ld-bar { position: relative; height: 2px; width: 100%; background: rgba(255, 255, 255, .18); }
+.ld-fill { position: absolute; top: 0; left: 0; height: 100%; width: 0; background: #fff; }
+.ld-pct {
+  position: absolute; left: 0; bottom: 16px;
+  transform: translateX(-50%);
+  font-family: var(--font-display);
+  font-size: clamp(20px, 3vw, 34px);
+  color: #fff; white-space: nowrap;
+}
+
+/* =====================================================
    RESPONSIVE
    ===================================================== */
 @media (max-width: 860px) {
