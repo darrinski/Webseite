@@ -188,14 +188,22 @@
       };
 
       // Ton bei der ersten Nutzerinteraktion aktivieren (Browser verlangen dafür eine Aktion)
-      const enableSound = () => {
-        if (userMuted) return;
+      let soundEnabled = false;
+      const soundEvents = ['pointerdown', 'keydown', 'touchstart', 'wheel'];
+      const activateSound = () => {
+        soundEnabled = true;
         vid.muted = false;
         vid.play().catch(() => {});
         setMuteIcon();
+        soundEvents.forEach((ev) => window.removeEventListener(ev, enableSound));
       };
-      ['pointerdown', 'keydown', 'touchstart', 'wheel'].forEach((ev) =>
-        window.addEventListener(ev, enableSound, { once: true, passive: true }));
+      function enableSound(e) {
+        if (userMuted || soundEnabled) return;
+        // Klick direkt aufs Video regelt togglePlay separat (erster Klick = nur Ton an)
+        if (e && vid.contains(e.target)) return;
+        activateSound();
+      }
+      soundEvents.forEach((ev) => window.addEventListener(ev, enableSound, { passive: true }));
 
       if (muteBtn) {
         setMuteIcon();
@@ -213,10 +221,15 @@
         playBtn.setAttribute('aria-label', vid.paused ? 'Abspielen' : 'Pause');
       };
       let manualPause = false;
-      playBtn.addEventListener('click', () => {
-        if (vid.paused) { manualPause = false; vid.play(); }
+      const togglePlay = () => {
+        // Erster Klick aufs Video schaltet nur den Ton ein, ohne zu pausieren
+        if (!soundEnabled && !userMuted) { activateSound(); return; }
+        if (vid.paused) { manualPause = false; vid.play().catch(() => {}); }
         else { manualPause = true; vid.pause(); }
-      });
+      };
+      playBtn.addEventListener('click', togglePlay);
+      // Wie bei YouTube: Klick irgendwo aufs Video pausiert / startet
+      vid.addEventListener('click', togglePlay);
       vid.addEventListener('play', sync);
       vid.addEventListener('pause', sync);
 

@@ -394,7 +394,9 @@ body.page-work  { --nav-ink: #0a0a0a; --hover: var(--purple); } /* Violett */
   display: flex; align-items: center; gap: 12px;
   padding: 14px;
   background: linear-gradient(transparent, rgba(0, 0, 0, .55));
+  transition: opacity .25s ease;
 }
+.hero-figure video { cursor: pointer; }
 .vid-btn {
   flex: none; width: 36px; height: 36px;
   display: flex; align-items: center; justify-content: center;
@@ -406,9 +408,13 @@ body.page-work  { --nav-ink: #0a0a0a; --hover: var(--purple); } /* Violett */
 .vid-timeline {
   flex: 1; height: 14px; position: relative; cursor: pointer;
   display: flex; align-items: center;
-  opacity: 0; transition: opacity .25s ease;
 }
-.hero-figure:hover .vid-timeline { opacity: 1; }
+/* Auf Geräten mit Maus: die gesamte Video-UI nur beim Hovern zeigen */
+@media (hover: hover) {
+  .vid-ctrl { opacity: 0; pointer-events: none; }
+  .hero-figure:hover .vid-ctrl,
+  .hero-figure:focus-within .vid-ctrl { opacity: 1; pointer-events: auto; }
+}
 .vid-timeline::before {
   content: ""; position: absolute; left: 0; right: 0; top: 50%;
   transform: translateY(-50%); height: 2px; background: rgba(255, 255, 255, .28);
