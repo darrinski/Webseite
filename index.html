@@ -20,6 +20,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Expanded:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
 
   <link rel="stylesheet" href="style.css" />
+  <!-- Intro nur beim ersten Betreten der Seite zeigen -->
+  <style>html.intro-seen #loader{display:none!important}</style>
+  <script>try{if(sessionStorage.getItem('introSeen'))document.documentElement.classList.add('intro-seen');}catch(e){}</script>
 </head>
 <body class="page-home">
   <!-- ============ LOADINGSCREEN ============ -->
@@ -63,7 +66,7 @@
         <!-- BILD -->
         <figure class="hero-figure">
           <img src="assets/img/silhouette-sitzend-web.jpg" alt="Darren Sutter Porträt" />
-          <figcaption class="hero-fig-cap">Zürich, CH · 47.3769° N, 8.5417° E</figcaption>
+          <figcaption class="hero-fig-cap">Zürich, CH</figcaption>
         </figure>
 
       </div>
@@ -84,6 +87,13 @@
     (function () {
       const loader = document.getElementById('loader');
       if (!loader) return;
+
+      // Intro nur beim ersten Betreten der Seite (pro Browser-Sitzung), nicht bei jedem Home-Klick
+      let seen = false;
+      try { seen = !!sessionStorage.getItem('introSeen'); } catch (e) {}
+      if (seen) { loader.remove(); return; }
+      try { sessionStorage.setItem('introSeen', '1'); } catch (e) {}
+
       const fill = loader.querySelector('.ld-fill');
       const pct = loader.querySelector('.ld-pct');
 

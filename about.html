@@ -41,7 +41,7 @@
 
         <!-- VIDEO -->
         <figure class="hero-figure">
-          <video autoplay muted loop playsinline poster="assets/img/silhouette-hand-web.jpg" id="aboutVid">
+          <video autoplay muted loop playsinline poster="assets/img/about-cover.jpg" id="aboutVid">
             <source src="assets/video/about-loop.mp4" type="video/mp4" />
           </video>
           <div class="vid-ctrl">
@@ -176,15 +176,35 @@
     const ICON_SOUND = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>';
 
     if (vid && playBtn) {
-      // startet automatisch stumm (Browser erlauben Autoplay nur stumm)
+      // Autoplay startet technisch stumm (Browser erlauben Autoplay nur stumm),
+      // der Ton wird aber bei der ersten Interaktion automatisch eingeschaltet.
       vid.play().catch(() => {});
+
+      let userMuted = false; // true, sobald der Nutzer bewusst stummschaltet
+      const setMuteIcon = () => {
+        if (!muteBtn) return;
+        muteBtn.innerHTML = vid.muted ? ICON_MUTED : ICON_SOUND;
+        muteBtn.setAttribute('aria-label', vid.muted ? 'Ton einschalten' : 'Ton ausschalten');
+      };
+
+      // Ton bei der ersten Nutzerinteraktion aktivieren (Browser verlangen dafür eine Aktion)
+      const enableSound = () => {
+        if (userMuted) return;
+        vid.muted = false;
+        vid.play().catch(() => {});
+        setMuteIcon();
+      };
+      ['pointerdown', 'keydown', 'touchstart', 'wheel'].forEach((ev) =>
+        window.addEventListener(ev, enableSound, { once: true, passive: true }));
+
       if (muteBtn) {
-        muteBtn.innerHTML = ICON_MUTED;
-        muteBtn.addEventListener('click', () => {
+        setMuteIcon();
+        muteBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
           vid.muted = !vid.muted;
-          muteBtn.innerHTML = vid.muted ? ICON_MUTED : ICON_SOUND;
-          muteBtn.setAttribute('aria-label', vid.muted ? 'Ton einschalten' : 'Ton ausschalten');
-          if (!vid.muted) vid.play();
+          userMuted = vid.muted; // merkt sich bewusstes Stummschalten
+          if (!vid.muted) vid.play().catch(() => {});
+          setMuteIcon();
         });
       }
 
