@@ -397,6 +397,11 @@ body.page-work  { --nav-ink: #0a0a0a; --hover: var(--purple); } /* Violett */
   transition: opacity .25s ease;
 }
 .hero-figure video { cursor: pointer; }
+/* Safaris native Video-Controls ausblenden, nur eigene UI zeigen */
+.hero-figure video::-webkit-media-controls,
+.hero-figure video::-webkit-media-controls-enclosure,
+.hero-figure video::-webkit-media-controls-panel,
+.hero-figure video::-webkit-media-controls-start-playback-button { display: none !important; -webkit-appearance: none; }
 .vid-btn {
   flex: none; width: 36px; height: 36px;
   display: flex; align-items: center; justify-content: center;
