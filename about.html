@@ -44,6 +44,7 @@
           <video autoplay muted loop playsinline poster="assets/img/about-cover.jpg" id="aboutVid">
             <source src="assets/video/about-loop.mp4" type="video/mp4" />
           </video>
+          <div class="vid-flash" id="vidFlash" aria-hidden="true"></div>
           <div class="vid-ctrl">
             <button class="vid-btn" id="fsBtn" type="button" aria-label="Vollbild"></button>
             <div class="vid-timeline" id="vidTimeline"><span class="vid-progress" id="vidProgress"></span></div>
@@ -170,6 +171,8 @@
     const muteBtn = document.getElementById('muteBtn');
     const timeline = document.getElementById('vidTimeline');
     const progress = document.getElementById('vidProgress');
+    const ICON_PLAY = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+    const ICON_PAUSE = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="15" y="5" width="4" height="14"/></svg>';
     const ICON_MUTED = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
     const ICON_SOUND = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>';
     const ICON_FS = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>';
@@ -215,30 +218,52 @@
         });
       }
 
-      // Vollbild-Button (mit Fallbacks für Safari / iOS)
+      // Eigener Vollbild-Modus (Overlay) statt Safaris nativem Player
+      const figure = vid.closest('.hero-figure');
+      const ICON_FS_EXIT = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V5a1 1 0 0 1 1-1h3M20 8V5a1 1 0 0 0-1-1h-3M4 16v3a1 1 0 0 0 1 1h3M20 16v3a1 1 0 0 1-1 1h-3"/></svg>';
+      let expanded = false;
+      const setExpanded = (on) => {
+        expanded = on;
+        if (figure) figure.classList.toggle('expanded', on);
+        document.documentElement.style.overflow = on ? 'hidden' : '';
+        if (typeof lenis !== 'undefined' && lenis) { on ? lenis.stop() : lenis.start(); }
+        if (fsBtn) {
+          fsBtn.innerHTML = on ? ICON_FS_EXIT : ICON_FS;
+          fsBtn.setAttribute('aria-label', on ? 'Vollbild verlassen' : 'Vollbild');
+        }
+      };
       if (fsBtn) {
         fsBtn.innerHTML = ICON_FS;
-        fsBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
-          if (fsEl) {
-            (document.exitFullscreen || document.webkitExitFullscreen || function () {}).call(document);
-          } else if (vid.requestFullscreen) {
-            vid.requestFullscreen();
-          } else if (vid.webkitRequestFullscreen) {
-            vid.webkitRequestFullscreen();
-          } else if (vid.webkitEnterFullscreen) {
-            vid.webkitEnterFullscreen(); // iOS Safari
-          }
-        });
+        fsBtn.addEventListener('click', (e) => { e.stopPropagation(); setExpanded(!expanded); });
       }
+      // Mit Escape schliessen
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && expanded) setExpanded(false); });
+      // Klick auf den dunklen Hintergrund (nicht aufs Video) schliesst
+      if (figure) {
+        figure.addEventListener('click', (e) => { if (expanded && e.target === figure) setExpanded(false); });
+      }
+
+      // Kurzes Aufblitzen beim Start/Stopp (wie bei YouTube, aber subtil)
+      const flash = document.getElementById('vidFlash');
+      const showFlash = (iconHtml) => {
+        if (!flash) return;
+        flash.innerHTML = iconHtml;
+        flash.classList.remove('show');
+        void flash.offsetWidth; // Reflow, damit die Animation neu startet
+        flash.classList.add('show');
+      };
 
       let manualPause = false;
       const togglePlay = () => {
-        // Erster Klick aufs Video schaltet nur den Ton ein, ohne zu pausieren
-        if (!soundEnabled && !userMuted) { activateSound(); return; }
-        if (vid.paused) { manualPause = false; vid.play().catch(() => {}); }
-        else { manualPause = true; vid.pause(); }
+        // Erster Klick aktiviert zusätzlich den Ton, danach normales Play/Pause
+        if (!soundEnabled && !userMuted) {
+          soundEnabled = true;
+          vid.muted = false;
+          setMuteIcon();
+          soundEvents.forEach((ev) => window.removeEventListener(ev, enableSound));
+        }
+        if (vid.paused) { manualPause = false; vid.play().catch(() => {}); showFlash(ICON_PLAY); }
+        else { manualPause = true; vid.pause(); showFlash(ICON_PAUSE); }
       };
       // Wie bei YouTube: Klick irgendwo aufs Video pausiert / startet
       vid.addEventListener('click', togglePlay);

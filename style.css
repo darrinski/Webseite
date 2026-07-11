@@ -420,6 +420,37 @@ body.page-work  { --nav-ink: #0a0a0a; --hover: var(--purple); } /* Violett */
   .hero-figure:hover .vid-ctrl,
   .hero-figure:focus-within .vid-ctrl { opacity: 1; pointer-events: auto; }
 }
+
+/* Eigener Vollbild-Modus (Overlay) statt Safaris nativem Player */
+.hero-figure.expanded {
+  position: fixed; inset: 0; z-index: 9999;
+  height: auto; max-height: none; margin: 0; align-self: auto;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, .94);
+}
+.hero-figure.expanded video {
+  width: auto; height: auto;
+  max-width: 96vw; max-height: 94vh;
+  object-fit: contain; object-position: center;
+  border-radius: 10px;
+}
+.hero-figure.expanded .vid-ctrl { opacity: 1 !important; pointer-events: auto !important; }
+
+/* Kurzes Play/Pause-Aufblitzen in der Mitte (subtil, wie bei YouTube) */
+.vid-flash {
+  position: absolute; top: 50%; left: 50%;
+  width: 68px; height: 68px; margin: -34px 0 0 -34px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(10, 10, 10, .5); color: #fff;
+  border-radius: 50%;
+  opacity: 0; pointer-events: none; z-index: 2;
+}
+.vid-flash svg { width: 26px; height: 26px; }
+.vid-flash.show { animation: vidFlash .55s ease-out forwards; }
+@keyframes vidFlash {
+  0% { opacity: .78; transform: scale(.82); }
+  100% { opacity: 0; transform: scale(1.35); }
+}
 .vid-timeline::before {
   content: ""; position: absolute; left: 0; right: 0; top: 50%;
   transform: translateY(-50%); height: 2px; background: rgba(255, 255, 255, .28);
